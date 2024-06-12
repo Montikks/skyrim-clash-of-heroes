@@ -66,7 +66,7 @@ V režimu Tower Defense hráči postupují přes úrovně a bojují proti nepř�
 - Pygame
 
 ## Autor
-- Vaše jméno
+- Montikk
 
 ## Licence
 - MIT
