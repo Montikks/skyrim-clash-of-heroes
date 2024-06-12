@@ -1,19 +1,20 @@
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import ttk
 import json
 import os
-from bojovnici import Sermir, Lukostrelec, Mag, Boss, Tank, Healer, Berserker
+from bojovnici import Sermir, Lukostrelec, Mag, Boss, Tank, Healer, Berserker, Assassin
 from arena import Arena
-from items import HealthPotion, DamageBoost, DefenseBoost
+from items import HealthPotion, DamageBoost, DefenseBoost, SpeedBoost, ManaPotion
+from tower import Tower
 import pygame
 
 # Inicializace pygame
 pygame.mixer.init()
 
 # Načtení zvuků
-zvuk_utok = pygame.mixer.Sound("sounds/utok.wav")
-zvuk_vitezstvi = pygame.mixer.Sound("sounds/vitezstvi.wav")
-zvuk_porazka = pygame.mixer.Sound("sounds/porazka.wav")
+zvuk_utok = pygame.mixer.Sound("../sounds/utok.wav")
+zvuk_vitezstvi = pygame.mixer.Sound("../sounds/vitezstvi.wav")
+zvuk_porazka = pygame.mixer.Sound("../sounds/porazka.wav")
 
 # Nastavení hlasitosti
 zvuk_utok.set_volume(0.2)
@@ -29,29 +30,18 @@ class Aplikace:
         self.label = ttk.Label(master, text="Vítejte v Skyrim: Clash of Heroes!")
         self.label.pack()
 
-        self.vyber_bojovniky_button = ttk.Button(master, text="Vyber bojovníky", command=self.vyber_bojovniky)
-        self.vyber_bojovniky_button.pack()
+        self.rozcesti_button = ttk.Button(master, text="Rozcestí", command=self.vyber_rozcesti)
+        self.rozcesti_button.pack()
 
         self.skoncit_button = ttk.Button(master, text="Konec", command=master.quit)
         self.skoncit_button.pack()
 
-        self.zobrazit_skore_button = ttk.Button(master, text="Zobrazit skóre", command=self.zobrazit_skore)
-        self.zobrazit_skore_button.pack()
-
-        self.ulozit_hru_button = ttk.Button(master, text="Uložit hru", command=self.ulozit_hru)
-        self.ulozit_hru_button.pack()
-
-        self.nacist_hru_button = ttk.Button(master, text="Načíst hru", command=self.nacist_hru)
-        self.nacist_hru_button.pack()
-
         self.bojovnici = []
         self.boss = Boss("Alduin")
         self.arena_typ = tk.StringVar()
+        self.obtiznost = tk.StringVar()
         self.arena = None
-
-        self.skore_soubor = "skore.json"
-        self.hra_soubor = "hra.json"
-        self.nacist_skore()
+        self.tower = None
 
         self.text_area = tk.Text(master, height=15, width=50)
         self.text_area.pack()
@@ -63,8 +53,11 @@ class Aplikace:
         self.message_label = ttk.Label(master, text="")
         self.message_label.pack()
 
+        # Načítání obrázků bojovníků (pokud budete mít obrázky)
+        # self.obrazky_bojovniku = {...}
+
         # Panel pro výběr a použití předmětů
-        self.items = [HealthPotion(), DamageBoost(), DefenseBoost()]
+        self.items = [HealthPotion(), DamageBoost(), DefenseBoost(), SpeedBoost(), ManaPotion()]
 
         self.item_frame = ttk.Frame(master)
         self.item_frame.pack()
@@ -83,8 +76,165 @@ class Aplikace:
         self.use_item_button = ttk.Button(self.item_frame, text="Použít předmět", command=self.pouzit_predmet)
         self.use_item_button.pack(side=tk.LEFT)
 
+    def vyber_rozcesti(self):
+        self.okno_rozcesti = tk.Toplevel(self.master)
+        self.okno_rozcesti.title("Rozcestí")
+
+        ttk.Label(self.okno_rozcesti, text="Vyberte směr:").pack()
+
+        ttk.Button(self.okno_rozcesti, text="Arena", command=self.vyber_obtiznost).pack()
+        ttk.Button(self.okno_rozcesti, text="Tower", command=self.vyber_tower).pack()
+
+    def vyber_obtiznost(self):
+        self.okno_obtiznost = tk.Toplevel(self.master)
+        self.okno_obtiznost.title("Vyber obtížnost")
+
+        ttk.Label(self.okno_obtiznost, text="Vyberte obtížnost:").pack()
+
+        for obtiznost in ["Lehká", "Střední", "Těžká"]:
+            ttk.Radiobutton(self.okno_obtiznost, text=obtiznost, variable=self.obtiznost, value=obtiznost).pack()
+
+        self.potvrdit_obtiznost_button = ttk.Button(self.okno_obtiznost, text="Potvrdit",
+                                                    command=self.potvrdit_obtiznost)
+        self.potvrdit_obtiznost_button.pack()
+
+    def potvrdit_obtiznost(self):
+        if self.obtiznost.get():
+            self.okno_obtiznost.destroy()
+            self.vyber_bojovniky()
+        else:
+            self.zobrazit_zpravu("Musíte vybrat obtížnost!", True)
+
+    def vyber_bojovniky(self):
+        self.bojovnici = []
+        self.okno_vyber = tk.Toplevel(self.master)
+        self.okno_vyber.title("Vyber bojovníky")
+
+        ttk.Label(self.okno_vyber, text="Vyberte 3 bojovníky:").pack()
+
+        self.vyber_seznam = tk.Listbox(self.okno_vyber, selectmode=tk.MULTIPLE)
+        for bojovnik in ["Sermir", "Lukostrelec", "Mag", "Tank", "Healer", "Berserker", "Assassin"]:
+            self.vyber_seznam.insert(tk.END, bojovnik)
+        self.vyber_seznam.pack()
+
+        self.potvrdit_button = ttk.Button(self.okno_vyber, text="Potvrdit", command=self.potvrdit_vyber)
+        self.potvrdit_button.pack()
+
+    def potvrdit_vyber(self):
+        vybrani_bojovnici = self.vyber_seznam.curselection()
+        for index in vybrani_bojovnici:
+            bojovnik_typ = self.vyber_seznam.get(index)
+            if bojovnik_typ == "Sermir":
+                self.bojovnici.append(Sermir(bojovnik_typ))
+            elif bojovnik_typ == "Lukostrelec":
+                self.bojovnici.append(Lukostrelec(bojovnik_typ))
+            elif bojovnik_typ == "Mag":
+                self.bojovnici.append(Mag(bojovnik_typ))
+            elif bojovnik_typ == "Tank":
+                self.bojovnici.append(Tank(bojovnik_typ))
+            elif bojovnik_typ == "Healer":
+                self.bojovnici.append(Healer(bojovnik_typ))
+            elif bojovnik_typ == "Berserker":
+                self.bojovnici.append(Berserker(bojovnik_typ))
+            elif bojovnik_typ == "Assassin":
+                self.bojovnici.append(Assassin(bojovnik_typ))
+
+        if len(self.bojovnici) == 3:
+            self.vyber_arenu()
+            self.bojovnik_menu['menu'].delete(0, 'end')
+            for bojovnik in self.bojovnici:
+                self.bojovnik_menu['menu'].add_command(label=bojovnik.jmeno,
+                                                       command=tk._setit(self.bojovnik_var, bojovnik.jmeno))
+        else:
+            self.zobrazit_zpravu("Musíte vybrat přesně 3 bojovníky!", True)
+
+    def vyber_arenu(self):
+        self.okno_arena = tk.Toplevel(self.master)
+        self.okno_arena.title("Vyber arénu")
+
+        ttk.Label(self.okno_arena, text="Vyberte typ arény:").pack()
+
+        for typ in ["Les", "Hory", "Jeskyne", "Poušť", "Město"]:
+            ttk.Radiobutton(self.okno_arena, text=typ, variable=self.arena_typ, value=typ).pack()
+
+        self.potvrdit_arena_button = ttk.Button(self.okno_arena, text="Potvrdit", command=self.potvrdit_arena)
+        self.potvrdit_arena_button.pack()
+
+    def potvrdit_arena(self):
+        if self.arena_typ.get():
+            self.okno_arena.destroy()
+            self.zacni_hru()
+        else:
+            self.zobrazit_zpravu("Musíte vybrat typ arény!", True)
+
+    def vyber_tower(self):
+        self.okno_obtiznost = tk.Toplevel(self.master)
+        self.okno_obtiznost.title("Vyber obtížnost pro Tower")
+
+        ttk.Label(self.okno_obtiznost, text="Vyberte obtížnost:").pack()
+
+        for obtiznost in ["Lehká", "Střední", "Těžká"]:
+            ttk.Radiobutton(self.okno_obtiznost, text=obtiznost, variable=self.obtiznost, value=obtiznost).pack()
+
+        self.potvrdit_obtiznost_button = ttk.Button(self.okno_obtiznost, text="Potvrdit", command=self.potvrdit_tower)
+        self.potvrdit_obtiznost_button.pack()
+
+    def potvrdit_tower(self):
+        if self.obtiznost.get():
+            self.okno_obtiznost.destroy()
+            self.vyber_bojovniky_tower()
+        else:
+            self.zobrazit_zpravu("Musíte vybrat obtížnost!", True)
+
+    def vyber_bojovniky_tower(self):
+        self.bojovnici = []
+        self.okno_vyber = tk.Toplevel(self.master)
+        self.okno_vyber.title("Vyber bojovníky pro Tower")
+
+        ttk.Label(self.okno_vyber, text="Vyberte 3 bojovníky:").pack()
+
+        self.vyber_seznam = tk.Listbox(self.okno_vyber, selectmode=tk.MULTIPLE)
+        for bojovnik in ["Sermir", "Lukostrelec", "Mag", "Tank", "Healer", "Berserker", "Assassin"]:
+            self.vyber_seznam.insert(tk.END, bojovnik)
+        self.vyber_seznam.pack()
+
+        self.potvrdit_button = ttk.Button(self.okno_vyber, text="Potvrdit", command=self.potvrdit_vyber_tower)
+        self.potvrdit_button.pack()
+
+    def potvrdit_vyber_tower(self):
+        vybrani_bojovnici = self.vyber_seznam.curselection()
+        for index in vybrani_bojovnici:
+            bojovnik_typ = self.vyber_seznam.get(index)
+            if bojovnik_typ == "Sermir":
+                self.bojovnici.append(Sermir(bojovnik_typ))
+            elif bojovnik_typ == "Lukostrelec":
+                self.bojovnici.append(Lukostrelec(bojovnik_typ))
+            elif bojovnik_typ == "Mag":
+                self.bojovnici.append(Mag(bojovnik_typ))
+            elif bojovnik_typ == "Tank":
+                self.bojovnici.append(Tank(bojovnik_typ))
+            elif bojovnik_typ == "Healer":
+                self.bojovnici.append(Healer(bojovnik_typ))
+            elif bojovnik_typ == "Berserker":
+                self.bojovnici.append(Berserker(bojovnik_typ))
+            elif bojovnik_typ == "Assassin":
+                self.bojovnici.append(Assassin(bojovnik_typ))
+
+        if len(self.bojovnici) == 3:
+            self.start_tower()
+            self.bojovnik_menu['menu'].delete(0, 'end')
+            for bojovnik in self.bojovnici:
+                self.bojovnik_menu['menu'].add_command(label=bojovnik.jmeno,
+                                                       command=tk._setit(self.bojovnik_var, bojovnik.jmeno))
+        else:
+            self.zobrazit_zpravu("Musíte vybrat přesně 3 bojovníky!", True)
+
+    def start_tower(self):
+        self.tower = Tower(self.bojovnici, self.text_area)
+        self.tower.start()
+
     def pouzit_predmet(self):
-        if not self.arena:
+        if not self.arena and not self.tower:
             self.zobrazit_zpravu("Hra ještě nezačala!", True)
             return
 
@@ -96,8 +246,13 @@ class Aplikace:
         selected_item = next(item for item in self.items if item.name == selected_item_name)
         selected_bojovnik_name = self.bojovnik_var.get()
         selected_bojovnik = next(bojovnik for bojovnik in self.bojovnici if bojovnik.jmeno == selected_bojovnik_name)
-        self.arena.use_item(selected_bojovnik, selected_item)
-        self.aktualizovat_zdravotni_stav()  # Aktualizace zdravotního stavu po použití předmětu
+
+        if self.arena:
+            self.arena.use_item(selected_bojovnik, selected_item)
+        elif self.tower:
+            self.tower.use_item(selected_bojovnik, selected_item)
+
+        self.aktualizovat_zdravotni_stav()
 
     def nacist_skore(self):
         if os.path.exists(self.skore_soubor):
@@ -119,9 +274,9 @@ class Aplikace:
         skore_okno = tk.Toplevel(self.master)
         skore_okno.title("Skóre")
 
-        tk.Label(skore_okno, text="Top 10 skóre").pack()
+        ttk.Label(skore_okno, text="Top 10 skóre").pack()
         for zaznam in self.skore:
-            tk.Label(skore_okno, text=f"{zaznam['jmeno']}: {zaznam['body']} bodů").pack()
+            ttk.Label(skore_okno, text=f"{zaznam['jmeno']}: {zaznam['body']} bodů").pack()
 
     def ulozit_hru(self):
         if hasattr(self, 'arena'):
@@ -154,67 +309,6 @@ class Aplikace:
         else:
             self.message_label.config(foreground="green")
 
-    def vyber_bojovniky(self):
-        self.bojovnici = []
-        self.okno_vyber = tk.Toplevel(self.master)
-        self.okno_vyber.title("Vyber bojovníky")
-
-        tk.Label(self.okno_vyber, text="Vyberte 3 bojovníky:").pack()
-
-        self.vyber_seznam = tk.Listbox(self.okno_vyber, selectmode=tk.MULTIPLE)
-        for bojovnik in ["Sermir", "Lukostrelec", "Mag", "Tank", "Healer", "Berserker"]:
-            self.vyber_seznam.insert(tk.END, bojovnik)
-        self.vyber_seznam.pack()
-
-        self.potvrdit_button = ttk.Button(self.okno_vyber, text="Potvrdit", command=self.potvrdit_vyber)
-        self.potvrdit_button.pack()
-
-    def potvrdit_vyber(self):
-        vybrani_bojovnici = self.vyber_seznam.curselection()
-        for index in vybrani_bojovnici:
-            bojovnik_typ = self.vyber_seznam.get(index)
-            if bojovnik_typ == "Sermir":
-                self.bojovnici.append(Sermir(bojovnik_typ))
-            elif bojovnik_typ == "Lukostrelec":
-                self.bojovnici.append(Lukostrelec(bojovnik_typ))
-            elif bojovnik_typ == "Mag":
-                self.bojovnici.append(Mag(bojovnik_typ))
-            elif bojovnik_typ == "Tank":
-                self.bojovnici.append(Tank(bojovnik_typ))
-            elif bojovnik_typ == "Healer":
-                self.bojovnici.append(Healer(bojovnik_typ))
-            elif bojovnik_typ == "Berserker":
-                self.bojovnici.append(Berserker(bojovnik_typ))
-
-        if len(self.bojovnici) == 3:
-            self.vyber_arenu()
-            self.bojovnik_menu['menu'].delete(0, 'end')
-            for bojovnik in self.bojovnici:
-                self.bojovnik_menu['menu'].add_command(label=bojovnik.jmeno,
-                                                       command=tk._setit(self.bojovnik_var, bojovnik.jmeno))
-        else:
-            self.zobrazit_zpravu("Musíte vybrat přesně 3 bojovníky!", True)
-
-    def vyber_arenu(self):
-        self.okno_arena = tk.Toplevel(self.master)
-        self.okno_arena.title("Vyber arénu")
-
-        tk.Label(self.okno_arena, text="Vyberte typ arény:").pack()
-
-        for typ in ["Les", "Hory", "Jeskyne", "Poušť", "Město"]:
-            ttk.Radiobutton(self.okno_arena, text=typ, variable=self.arena_typ, value=typ).pack()
-
-        self.potvrdit_arena_button = ttk.Button(self.okno_arena, text="Potvrdit", command=self.potvrdit_arena)
-        self.potvrdit_arena_button.pack()
-
-    def potvrdit_arena(self):
-        if self.arena_typ.get():
-            self.okno_arena.destroy()
-            self.okno_vyber.destroy()
-            self.zacni_hru()
-        else:
-            self.zobrazit_zpravu("Musíte vybrat typ arény!", True)
-
     def aktualizovat_indikatory(self):
         for widget in self.indikatory_frame.winfo_children():
             widget.destroy()
@@ -223,8 +317,14 @@ class Aplikace:
         self.health_labels_boss = None
 
         for i, bojovnik in enumerate(self.bojovnici):
-            health_label = ttk.Label(self.indikatory_frame, text=f"{bojovnik.jmeno}: {bojovnik._zivot} HP")
-            health_label.pack()
+            frame = ttk.Frame(self.indikatory_frame)
+            frame.pack()
+
+            label = ttk.Label(frame, text=f"{bojovnik.jmeno}")
+            label.pack(side=tk.LEFT)
+
+            health_label = ttk.Label(frame, text=f"{bojovnik.jmeno}: {bojovnik._zivot} HP")
+            health_label.pack(side=tk.LEFT)
             self.health_labels_bojovnici.append(health_label)
 
         self.health_labels_boss = ttk.Label(self.indikatory_frame, text=f"{self.boss.jmeno}: {self.boss._zivot} HP")
@@ -245,6 +345,11 @@ class Aplikace:
         self.arena.zacni_boj()
         celkove_skore = sum(self.arena.scores[bojovnik.jmeno] for bojovnik in self.bojovnici)
         self.aktualizovat_skore({"jmeno": "Hráč", "body": celkove_skore})
+
+        # Získání zkušeností po boji
+        for bojovnik in self.bojovnici:
+            bojovnik.ziskat_zkusenosti(50)  # Přidejte logiku pro získání zkušeností podle boje
+
         self.zobrazit_zpravu("Boj skončil!")
         self.aktualizovat_zdravotni_stav()
 

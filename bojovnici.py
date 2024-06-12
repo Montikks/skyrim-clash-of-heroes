@@ -21,87 +21,97 @@ class Bojovnik:
         self.jmeno = jmeno
         self._zivot = 100
         self._poskozeni = 10
-        self._xp = 0
+        self._zivot_max = 100
+        self._uroven = 1
+        self._zkusenosti = 0
+        self._dalsi_uroven = 100  # Zkušenosti potřebné pro další úroveň
 
     def utok(self, protivnik):
-        protivnik._zivot -= self._poskozeni
-        return f"{self.jmeno} útočí na {protivnik.jmeno} a způsobuje {self._poskozeni} poškození!"
+        poskozeni = random.randint(0, self._poskozeni)
+        protivnik._zivot -= poskozeni
+        return f"{self.jmeno} útočí na {protivnik.jmeno} a způsobuje {poskozeni} poškození!"
 
-    def pridat_xp(self, xp):
-        self._xp += xp
-        if self._xp >= 100:
-            self._zivot += 20
-            self._poskozeni += 5
-            self._xp = 0
-            return f"{self.jmeno} postoupil na vyšší úroveň!"
-        return f"{self.jmeno} získal {xp} XP."
+    def ziskat_zkusenosti(self, zkusenosti):
+        self._zkusenosti += zkusenosti
+        if self._zkusenosti >= self._dalsi_uroven:
+            self._uroven_up()
 
-    def to_dict(self):
-        return {
-            "jmeno": self.jmeno,
-            "zivot": self._zivot,
-            "poskozeni": self._poskozeni,
-            "xp": self._xp
-        }
-
-    @classmethod
-    def from_dict(cls, data):
-        instance = cls(data["jmeno"])
-        instance._zivot = data["zivot"]
-        instance._poskozeni = data["poskozeni"]
-        instance._xp = data["xp"]
-        return instance
-
+    def _uroven_up(self):
+        self._uroven += 1
+        self._zkusenosti -= self._dalsi_uroven
+        self._dalsi_uroven = int(self._dalsi_uroven * 1.5)  # Zvyšování náročnosti pro další úroveň
+        self._zivot_max += 20  # Zvýšení maximálního zdraví při úrovni nahoru
+        self._zivot = self._zivot_max
+        self._poskozeni += 5  # Zvýšení poškození při úrovni nahoru
+        print(f"{self.jmeno} postoupil na úroveň {self._uroven}!")
 
 class Sermir(Bojovnik):
     def __init__(self, jmeno):
         super().__init__(jmeno)
-        self._zivot = 120
+        self._zivot = 150
         self._poskozeni = 15
-
 
 class Lukostrelec(Bojovnik):
     def __init__(self, jmeno):
         super().__init__(jmeno)
-        self._zivot = 80
+        self._zivot = 100
         self._poskozeni = 20
-
 
 class Mag(Bojovnik):
     def __init__(self, jmeno):
         super().__init__(jmeno)
-        self._zivot = 70
+        self._zivot = 80
         self._poskozeni = 25
-
 
 class Tank(Bojovnik):
     def __init__(self, jmeno):
         super().__init__(jmeno)
-        self._zivot = 150
+        self._zivot = 200
         self._poskozeni = 10
-
 
 class Healer(Bojovnik):
     def __init__(self, jmeno):
         super().__init__(jmeno)
         self._zivot = 90
         self._poskozeni = 5
+        self._mana = 100  # Přidání atributu mana
 
-    def heal(self, ally):
-        ally._zivot += 20
-        return f"{self.jmeno} léčí {ally.jmeno} za 20 životů!"
-
+    def uzdraveni(self, spojenci):
+        if self._mana >= 10:
+            self._mana -= 10
+            for spojenec in spojenci:
+                spojenec._zivot += 20
+                if spojenec._zivot > spojenec._zivot_max:
+                    spojenec._zivot = spojenec._zivot_max
+            return f"{self.jmeno} uzdravil své spojence za 20 HP!"
+        else:
+            return f"{self.jmeno} nemá dostatek many pro uzdravení!"
 
 class Berserker(Bojovnik):
     def __init__(self, jmeno):
         super().__init__(jmeno)
-        self._zivot = 100
+        self._zivot = 120
         self._poskozeni = 30
 
+class Assassin(Bojovnik):
+    def __init__(self, jmeno):
+        super().__init__(jmeno)
+        self._zivot = 60
+        self._poskozeni = 35
+        self._rychlost = 20  # Přidání nové vlastnosti rychlost
+
+    def utok(self, protivnik):
+        if random.random() < 0.2:
+            kriticke_poskozeni = self._poskozeni * 2
+            protivnik._zivot -= kriticke_poskozeni
+            return f"{self.jmeno} útočí na {protivnik.jmeno} a způsobuje kritický zásah za {kriticke_poskozeni} poškození!"
+        else:
+            return super().utok(protivnik)
 
 class Boss(Bojovnik):
     def __init__(self, jmeno):
         super().__init__(jmeno)
         self._zivot = 300
-        self._poskozeni = 25
+        self._poskozeni = 20
+
 

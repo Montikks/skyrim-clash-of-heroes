@@ -1,34 +1,30 @@
 # Skyrim: Clash of Heroes
 
-## Popis hry
-Skyrim: Clash of Heroes je tahová strategická hra, kde hráči ovládají tým bojovníků a bojují proti mocnému bossovi v různých arénách. Hráči si mohou vybrat z několika typů bojovníků, každý s unikátními vlastnostmi a schopnostmi. Bojovníci mohou během boje používat různé předměty, které zvyšují jejich atributy nebo poskytují jiné výhody. Hra je inspirována populární sérií The Elder Scrolls: Skyrim.
+Skyrim: Clash of Heroes je desková hra napsaná v Pythonu, která simuluje souboje v aréně mezi různými typy bojovníků. Hra obsahuje dva hlavní herní režimy: Arena a Tower Defense (PVE). Hráči si mohou vybrat své bojovníky a bojovat proti bossům nebo nepřátelům v nekonečném tower režimu.
 
-## Funkce hry
-- **Různé typy bojovníků**: Smeříř, Lukostřelec, Mag, Tank, Healer, Berserker, Boss.
-- **Různé typy arén**: Les, Hory, Jeskyně, Poušť, Město, Vodopád, Poušť noci.
-- **Systém předmětů**: Hráči mohou používat předměty jako Health Potion, Damage Boost, Defense Boost, Speed Boost.
-- **Úrovně obtížnosti**: Hráči mohou zvolit mezi třemi úrovněmi obtížnosti – Lehká, Střední, Těžká.
-- **Tahový boj**: Hráči se střídají v útocích na protivníka, aplikují vlivy arény a používají předměty.
-
-## Požadavky
-- Python 3.x
-- Knihovny: `tkinter`, `pygame`, `json`, `os`
+## Funkce
+- Výběr z různých typů bojovníků: Sermir, Lukostrelec, Mag, Tank, Healer, Berserker, Assassin
+- Bojovníci mohou získávat zkušenosti a zvyšovat své úrovně
+- Dva herní režimy: Arena a Tower Defense
+- Použití různých předmětů během boje
 
 ## Instalace
-1. Naklonujte tento repozitář:
+
+1. Klonujte repozitář:
     ```bash
-    git clone https://github.com/uzivatel/skyrim-clash-of-heroes.git
+    git clone https://github.com/VASE-UZIVATELSKE-JMENO/skyrim-clash-of-heroes.git
+    cd skyrim-clash-of-heroes
     ```
 
 2. Vytvořte a aktivujte virtuální prostředí:
     ```bash
     python -m venv venv
-    source venv/bin/activate   # Na Windows: venv\Scripts\activate
+    source venv/bin/activate  # Na Windows použijte `venv\Scripts\activate`
     ```
 
-3. Nainstalujte požadované balíčky:
+3. Nainstalujte závislosti:
     ```bash
-    pip install pygame
+    pip install -r requirements.txt
     ```
 
 4. Spusťte hru:
@@ -36,23 +32,41 @@ Skyrim: Clash of Heroes je tahová strategická hra, kde hráči ovládají tým
     python main.py
     ```
 
-## Použití
-Po spuštění hry se otevře grafické uživatelské rozhraní (GUI). Hráči mohou:
-- Vybrat obtížnost hry.
-- Vybrat bojovníky do svého týmu.
-- Vybrat arénu, ve které se bude bojovat.
-- Používat předměty během boje pro zvýšení šancí na vítězství.
-- Sledovat průběh boje a skóre.
+## Herní režimy
 
-## Struktura projektu
-- `main.py`: Hlavní soubor, který obsahuje logiku aplikace a GUI.
-- `bojovnici.py`: Definice tříd pro různé typy bojovníků.
-- `arena.py`: Definice třídy arény a související logiky.
-- `items.py`: Definice tříd předmětů.
-- `sounds/`: Adresář obsahující zvukové soubory používané ve hře.
+### Arena
+V režimu Arena si hráči vyberou tři bojovníky a bojují proti bossovi v různých typech arén.
 
-## Autoři
-- [Montikk](https://github.com/Montikks)
+### Tower Defense (PVE)
+V režimu Tower Defense hráči postupují přes úrovně a bojují proti nepřátelům, kteří se postupně stávají silnějšími. Hráči musí sbírat zkušenosti a zvyšovat úrovně svých bojovníků, aby mohli pokračovat dál.
+
+## Jak hrát
+
+1. Spusťte hru a vyberte režim "Rozcestí".
+2. Vyberte buď "Arena" nebo "Tower".
+3. Vyberte obtížnost a poté vyberte tři bojovníky.
+4. V režimu Arena vyberte typ arény, v režimu Tower se hra spustí automaticky.
+5. Používejte předměty k vylepšení svých bojovníků během boje.
+6. Sledujte zdraví svých bojovníků a bosse/nepřátel v textovém poli.
+
+## Změny a vylepšení
+
+### Novinky
+- Přidán režim Tower Defense (PVE), kde hráči postupují přes úrovně a bojují s nepřáteli.
+- Implementován systém zkušeností a úrovní pro bojovníky.
+- Přidány nové předměty: Health Potion, Damage Boost, Defense Boost, Speed Boost, Mana Potion.
+
+### Opravy chyb
+- Opraveny chyby při importu a inicializaci předmětů.
+- Opraveny chyby v bojové logice a zobrazení zpráv.
+
+## Požadavky
+- Python 3.x
+- Tkinter
+- Pygame
+
+## Autor
+- Vaše jméno
 
 ## Licence
-Tento projekt je licencován pod MIT licencí. Více informací najdete v souboru LICENSE.
+- MIT
