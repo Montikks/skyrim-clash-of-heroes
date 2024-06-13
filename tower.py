@@ -1,5 +1,6 @@
 import tkinter as tk
-from bojovnici import Boss
+from bojovnici import Bojovnik, Boss
+import random
 
 class Tower:
     def __init__(self, bojovnici, text_area):
@@ -7,11 +8,14 @@ class Tower:
         self.text_area = text_area
         self.level = 1
         self.enemies = self.generate_enemies()
+        self.obtiznost = "Střední"  # Default difficulty level
+
+    def set_obtiznost(self, obtiznost):
+        self.obtiznost = obtiznost
 
     def generate_enemies(self):
-        # Generujte nepřátele podle úrovně
         enemies = []
-        for _ in range(self.level):
+        for i in range(3):
             enemies.append(Boss(f"Enemy {self.level}"))
         return enemies
 
@@ -20,34 +24,59 @@ class Tower:
         self.boj()
 
     def boj(self):
-        while self.bojovnici and self.enemies:
-            for bojovnik in self.bojovnici:
-                if self.enemies:
-                    enemy = self.enemies[0]
-                    self.text_area.insert(tk.END, f"{bojovnik.jmeno} útočí na {enemy.jmeno}!\n")
-                    self.text_area.insert(tk.END, bojovnik.utok(enemy))
-                    if enemy._zivot <= 0:
-                        self.enemies.remove(enemy)
-                        self.text_area.insert(tk.END, f"{enemy.jmeno} je poražen!\n")
-                        # Získání zkušeností po poražení nepřítele
-                        bojovnik.ziskat_zkusenosti(20)
-            for enemy in self.enemies:
-                if self.bojovnici:
-                    bojovnik = self.bojovnici[0]
-                    self.text_area.insert(tk.END, f"{enemy.jmeno} útočí na {bojovnik.jmeno}!\n")
-                    self.text_area.insert(tk.END, enemy.utok(bojovnik))
-                    if bojovnik._zivot <= 0:
-                        self.bojovnici.remove(bojovnik)
-                        self.text_area.insert(tk.END, f"{bojovnik.jmeno} je poražen!\n")
+        for bojovnik in self.bojovnici:
+            if bojovnik._zivot > 0:
+                enemy = random.choice([e for e in self.enemies if e._zivot > 0])
+                vysledek, barva = bojovnik.utok(enemy)
+                self.text_area.insert(tk.END, vysledek + "\n")
+                self.text_area.tag_add("utok", "end-2l", "end-1l")
+                self.text_area.tag_config("utok", foreground=barva)
+                self.aktualizovat_zdravotni_stav()
+                if enemy._zivot <= 0:
+                    self.text_area.insert(tk.END, f"{enemy.jmeno} byl poražen!\n")
+                    if all(e._zivot <= 0 for e in self.enemies):
+                        self.level_up()
+                        return
+                vysledek, barva = enemy.utok(bojovnik)
+                self.text_area.insert(tk.END, vysledek + "\n")
+                self.text_area.tag_add("utok", "end-2l", "end-1l")
+                self.text_area.tag_config("utok", foreground=barva)
+                self.aktualizovat_zdravotni_stav()
+                if bojovnik._zivot <= 0:
+                    self.text_area.insert(tk.END, f"{bojovnik.jmeno} byl poražen!\n")
+                    if all(b._zivot <= 0 for b in self.bojovnici):
+                        self.text_area.insert(tk.END, "Všichni vaši bojovníci byli poraženi. Konec hry.\n")
+                        return
+        self.text_area.after(1000, self.boj)
 
-        if not self.bojovnici:
-            self.text_area.insert(tk.END, "Vaši bojovníci byli poraženi! Musíte začít znovu.\n")
-        elif not self.enemies:
-            self.text_area.insert(tk.END, f"Úroveň {self.level} byla vyčištěna! Pokračujte na další úroveň.\n")
-            self.level += 1
-            self.enemies = self.generate_enemies()
-            self.boj()
+    def level_up(self):
+        self.level += 1
+        self.text_area.insert(tk.END, f"Úspěšně jste dokončili úroveň {self.level - 1}! Postupujete na úroveň {self.level}.\n")
+        self.enemies = self.generate_enemies()
+        for bojovnik in self.bojovnici:
+            if bojovnik._zivot > 0:
+                zprava = bojovnik.pridat_xp(50)
+                self.text_area.insert(tk.END, zprava + "\n")
+        self.boj()
 
-    def use_item(self, bojovnik, item):
-        zprava = item.apply(bojovnik)
-        self.text_area.insert(tk.END, zprava + "\n")
+    def aktualizovat_zdravotni_stav(self):
+        for i, bojovnik in enumerate(self.bojovnici):
+            self.text_area.insert(tk.END, f"{bojovnik.jmeno}: {bojovnik._zivot} HP\n")
+        for enemy in self.enemies:
+            self.text_area.insert(tk.END, f"{enemy.jmeno}: {enemy._zivot} HP\n")
+
+    def to_dict(self):
+        return {
+            "bojovnici": [bojovnik.to_dict() for bojovnik in self.bojovnici],
+            "level": self.level,
+            "enemies": [enemy.to_dict() for enemy in self.enemies],
+            "obtiznost": self.obtiznost
+        }
+
+    @classmethod
+    def from_dict(cls, data, text_area):
+        tower = cls([Bojovnik.from_dict(b) for b in data["bojovnici"]], text_area)
+        tower.level = data["level"]
+        tower.enemies = [Boss.from_dict(e) for e in data["enemies"]]
+        tower.obtiznost = data["obtiznost"]
+        return tower

@@ -1,72 +1,67 @@
 # Skyrim: Clash of Heroes
 
-Skyrim: Clash of Heroes je desková hra napsaná v Pythonu, která simuluje souboje v aréně mezi různými typy bojovníků. Hra obsahuje dva hlavní herní režimy: Arena a Tower Defense (PVE). Hráči si mohou vybrat své bojovníky a bojovat proti bossům nebo nepřátelům v nekonečném tower režimu.
+Tento projekt je výsledkem školního zadání, ve kterém bylo naším úkolem vytvořit hru simulující arénu s bojovníky. Hra je napsána v Pythonu a využívá knihovnu Tkinter pro uživatelské rozhraní.
 
-## Funkce
-- Výběr z různých typů bojovníků: Sermir, Lukostrelec, Mag, Tank, Healer, Berserker, Assassin
-- Bojovníci mohou získávat zkušenosti a zvyšovat své úrovně
-- Dva herní režimy: Arena a Tower Defense
-- Použití různých předmětů během boje
+## Původní zadání
 
-## Instalace
+Představte si, že jsem váš zákazník a chci od vás vytvořit v Pythonu hru simulaci arény s bojovníky. Kreativitě se meze nekladou, ale základní koncept je, že mezi sebou budou soupeřit dva bojovníci na život a na smrt.
 
-1. Klonujte repozitář:
-    ```bash
-    git clone https://github.com/VASE-UZIVATELSKE-JMENO/skyrim-clash-of-heroes.git
-    cd skyrim-clash-of-heroes
-    ```
+### Požadavky
 
-2. Vytvořte a aktivujte virtuální prostředí:
+1. Dva bojovníci mezi sebou bojují na život a na smrt.
+2. Zapojte prvky náhody (náhodné bonusové poškození, ...).
+3. Bojovníci budou bojovat v aréně (vytvořte arénu jako objekt) - naformátujte výstup.
+4. Vytvořte více druhů bojovníků s různými vlastnostmi (šermíř, lukostřelec, mág, ... - přes dědičnost samozřejmě), které si budou moci uživatelé zvolit.
+5. Zaměřte se na bezpečnostní detaily objektů - například počet životů bojovníka, jeho poškození atd. by neměl být upravitelný jiným bojovníkem jen tak - implementujte privátní atributy a předejte logiku útoku.
+6. Udělejte možnost bojových skupin - více bojovníků na každé straně, kteří se střídají, když ten před nimi zemře.
+7. Můžete rozšířit hru na PVE (player vs environment - hráč proti počítači), kdy si například hráč může vybrat 5 bojovníků, kteří budou bojovat proti bossovi (drak, ...).
+
+## Co hra dělá
+
+Hra nabízí dva herní režimy: Aréna a Tower Defense.
+
+### Aréna
+
+V režimu Arény si hráč vybere tři bojovníky a jednoho bosse, kteří se utkají v boji na život a na smrt. Hráč může vybírat mezi různými typy bojovníků, jako jsou šermíř, lukostřelec, mág, tank, léčitel, berserker a asasín. Každý bojovník má své speciální schopnosti a útoky.
+
+### Tower Defense
+
+V režimu Tower Defense hráč postupuje úrovněmi a bojuje proti nepřátelům. Po každé úspěšné úrovni získají bojovníci zkušenosti a mohou postoupit na vyšší úroveň. Hráč může také ukládat a načítat svůj postup ve hře.
+
+## Co je nového
+
+- Přidán režim Tower Defense s postupujícími úrovněmi a zvyšující se obtížností.
+- Možnost ukládání a načítání hry.
+- Speciální útoky bojovníků s vizuálními efekty.
+- Vylepšené uživatelské rozhraní pro výběr herního režimu a obtížnosti.
+- Lepší vizuální zobrazení stavu bojovníků a nepřátel.
+
+## Jak hru spustit
+
+1. Naklonujte tento repozitář na svůj počítač.
+2. Otevřete terminál a přejděte do adresáře s hrou.
+3. Vytvořte virtuální prostředí a aktivujte jej:
     ```bash
     python -m venv venv
-    source venv/bin/activate  # Na Windows použijte `venv\Scripts\activate`
+    source venv/bin/activate # Na Windows použijte `venv\Scripts\activate`
     ```
-
-3. Nainstalujte závislosti:
+4. Nainstalujte potřebné závislosti:
     ```bash
     pip install -r requirements.txt
     ```
-
-4. Spusťte hru:
+5. Spusťte hru:
     ```bash
     python main.py
     ```
 
-## Herní režimy
-
-### Arena
-V režimu Arena si hráči vyberou tři bojovníky a bojují proti bossovi v různých typech arén.
-
-### Tower Defense (PVE)
-V režimu Tower Defense hráči postupují přes úrovně a bojují proti nepřátelům, kteří se postupně stávají silnějšími. Hráči musí sbírat zkušenosti a zvyšovat úrovně svých bojovníků, aby mohli pokračovat dál.
-
-## Jak hrát
-
-1. Spusťte hru a vyberte režim "Rozcestí".
-2. Vyberte buď "Arena" nebo "Tower".
-3. Vyberte obtížnost a poté vyberte tři bojovníky.
-4. V režimu Arena vyberte typ arény, v režimu Tower se hra spustí automaticky.
-5. Používejte předměty k vylepšení svých bojovníků během boje.
-6. Sledujte zdraví svých bojovníků a bosse/nepřátel v textovém poli.
-
-## Změny a vylepšení
-
-### Novinky
-- Přidán režim Tower Defense (PVE), kde hráči postupují přes úrovně a bojují s nepřáteli.
-- Implementován systém zkušeností a úrovní pro bojovníky.
-- Přidány nové předměty: Health Potion, Damage Boost, Defense Boost, Speed Boost, Mana Potion.
-
-### Opravy chyb
-- Opraveny chyby při importu a inicializaci předmětů.
-- Opraveny chyby v bojové logice a zobrazení zpráv.
-
 ## Požadavky
-- Python 3.x
+
+- Python 3.6 nebo novější
 - Tkinter
-- Pygame
+- pygame
+- json
 
-## Autor
-- Montikk
+## Montikk
 
-## Licence
-- MIT
+Pokud máte jakékoli dotazy nebo připomínky, neváhejte mě kontaktovat.
+
